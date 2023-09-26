@@ -16,7 +16,7 @@ library(terra)
 #             maps <- terra::rast(paste(path, "/maps_range.tif", sep = ""))
 #             mp <- maps[[dim(maps)[3]]]
 #             writeRaster(mp,
-#                 paste("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/Bellavance_maps/", spe, "_range.tif", sep = ""),
+#                 paste("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/Bellavance_maps/", spe, "_range.tif", sep = ""),
 #                 overwrite=TRUE)
 
 #             print(spe)
