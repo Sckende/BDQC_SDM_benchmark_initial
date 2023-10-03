@@ -24,23 +24,24 @@ ui <- dashboardPage(
       box(
         title = "choix",
         width = 4,
-        selectInput("maps_Vincent",
-          label = "SDMs Vincent",
+        selectInput("species_select",
+          label = "Species",
           choices = species
         )
       ),
       box(
         title = "carte e-bird",
-        width = 8
+        width = 4,
+        plotOutput("map_eBird")
+      ),
+      box(
+        title = "carte INLA - auto-corrélation spatiale",
+        width = 4,
+        plotOutput("map_Vince")
       )
     ),
     # Second row
     fluidRow(
-      box(
-        title = "carte INLA - auto-corrélation spatiale",
-        width = 6,
-        plotOutput("map_Vince")
-      ),
       box(
         title = "carte mapSPecies",
         width = 6
@@ -51,27 +52,45 @@ ui <- dashboardPage(
 
 
 server <- function(input, output, session) {
-  #### With stacCatalog
-  id_feat <- reactive({
-    paste0(input$maps_Vincent, "_range_2017")
+  #### Map selection
+  # eBird
+  path_map_ebird <- reactive({
+    paste0(input$species_select, "_range.tif")
   })
 
+  # Vincent - INLA
+  id_feat_Vince <- reactive({
+    paste0(input$species_select, "_range_2017")
+  })
+
+  #### Map visualization
+  # eBird
+  output$map_eBird <- renderPlot({
+    mp <- terra::rast(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps/", path_map_ebird()))
+
+    terra::plot(mp,
+      axes = TRUE,
+      main = ""
+    )
+  })
+
+  # Vincent
   output$map_Vince <- renderPlot({
     feat <- stac("https://acer.biodiversite-quebec.ca/stac/") %>%
       collections("oiseaux-nicheurs-qc") %>%
-      items(feature_id = id_feat()) %>%
+      items(feature_id = id_feat_Vince()) %>%
       get_request()
 
     tif_path <- feat$assets$data$href
 
     go_cat <- stars::read_stars(paste0("/vsicurl/", tif_path),
       proxy = TRUE
-    )
-    plot(go_cat,
+    ) # stars object
+    terra::plot(go_cat,
       axes = TRUE,
       main = "",
       col = c("#f6f8e0", "#009999"),
-      legend = FALSE
+      key.pos = NULL
     )
 
     legend("topright",
