@@ -1,7 +1,7 @@
 library(sf)
 library(terra)
 
-# Récuperation des cartes de Vincent - range
+#### Récuperation des cartes de Vincent - range ####
 # Conservation uniquement de la derniere couche - 2015-2019 => 2017
 
 # file_name <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/terra_converted_maps")
@@ -23,3 +23,58 @@ library(terra)
 
 #     }
 # }
+
+
+#### Transfo projection carte region Qc ####
+# --------------------------------------- #
+qc <- st_read("/home/claire/BDQC-GEOBON/data/QUEBEC_regions/sf_CERQ_SHP/QUEBEC_CR_NIV_01.gpkg")
+
+r <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_range_2017.tif")
+test <- plot(r, col = c("#f6f8e0", "#009999"), legend = F)
+summary(values(r))
+qc2 <- st_transform(qc, crs = st_crs(r))
+st_crs(qc2) == st_crs(r)
+
+# st_write(qc2, "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_raster_Vince.gpkg")
+
+
+queb <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_raster_Vince.gpkg")
+plot(st_geometry(queb), axes = T, add = T)
+
+
+
+#### Traitement des cartes ebird ####
+# Conversion Qc projection
+map_eb <- terra::rast("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/ebird/Corvus_corax_eb.tif")
+queb <- st_read("/home/claire/BDQC-GEOBON/data/QUEBEC_regions/sf_CERQ_SHP/QUEBEC_CR_NIV_01.gpkg")
+queb2 <- st_transform(queb, crs = st_crs(map_eb))
+st_crs(map_eb) == st_crs(queb2)
+
+qc_fus <- st_union(queb2)
+
+# species list
+# species absent of ebird -> aegolius_funereus & asio_flammeus
+sp_ls <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/Bellavance_maps")
+sp <- stringr::str_remove(sp_ls, "_range.tif")
+
+for (i in seq_along(sp)) {
+    spe <- sp[i]
+    spe_eb <- stringr::str_to_title(spe)
+
+    if (spe %in% c("aegolius_funereus", "asio_flammeus")) {
+        print(paste0("No data in eBird for ", spe))
+    } else if (!file.exists(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/ebird/", spe_eb, "_eb.tif"))) {
+        print(paste("---> species ", spe, " doesn't exist in eBird maps"))
+    } else {
+        print(paste0("-----------------> ", spe))
+
+        eb_map <- terra::rast(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/ebird/", spe_eb, "_eb.tif"))
+        eb_qc <- crop(eb_map, st_geometry(qc_fus))
+
+        writeRaster(
+            eb_qc,
+            paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps/", spe, "_range.tif"),
+            overwrite = TRUE
+        )
+    }
+}
