@@ -67,7 +67,7 @@ server <- function(input, output, session) {
             rr_mask <- mask(rr_crop, qc_fus)
 
             plot(rr_mask)
-            plot(qc4, add = T, border = "grey") # ==> OK!
+            plot(qc4, add = T, border = "grey")
         }
     })
 }
