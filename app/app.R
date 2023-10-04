@@ -10,7 +10,7 @@ qc_fus <- vect(st_union(queb_Vince))
 
 # App launch
 
-source("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial//app/app_UI.R")
+source("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial//app/app_ui.R")
 source("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial//app/app_server.R")
 
 shinyApp(ui, server)
