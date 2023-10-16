@@ -27,7 +27,7 @@ server <- function(input, output, session) {
 
             terra::plot(mp,
                 axes = F,
-                main = ""
+                main = "Abondance"
             )
             plot(st_geometry(queb_eb), add = T, border = "grey")
         }
@@ -47,9 +47,9 @@ server <- function(input, output, session) {
         )) # stars object
 
         if (input$inla_sortie == "range") {
-            plot(go_cat,
+            terra::plot(go_cat,
                 axes = F,
-                main = "",
+                main = "Occurrence",
                 col = c("#f6f8e0", "#009999"),
                 key.pos = NULL
             )
@@ -61,13 +61,22 @@ server <- function(input, output, session) {
                 bty = "n"
             )
 
-            plot(queb_Vince, add = T, border = "grey")
+            plot(queb_Vince,
+                add = T,
+                border = "grey"
+            )
         } else {
             rr_crop <- crop(go_cat, qc_fus)
             rr_mask <- mask(rr_crop, qc_fus)
 
-            plot(rr_mask)
-            plot(qc4, add = T, border = "grey")
+            plot(rr_mask,
+                axes = F,
+                main = "Probabilité de présence"
+            )
+            plot(queb_Vince,
+                add = T,
+                border = "grey"
+            )
         }
     })
 }
