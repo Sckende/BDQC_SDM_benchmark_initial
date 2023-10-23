@@ -10,6 +10,11 @@ server <- function(input, output, session) {
         paste0(input$species_select, "_", input$inla_sortie, "_2017")
     })
 
+    # Maxent
+    path_map_Maxent <- reactive({
+        paste0("/home/claire/BDQC-GEOBON/SDM_Maxent_results/Narval_first_test/", input$species_select, "_", input$Maxent_sortie, "_1-2_QC-buffer_Maxent-jar.rds")
+    })
+
     #### Map visualization
     # eBird
     output$map_eBird <- renderPlot({
@@ -78,5 +83,23 @@ server <- function(input, output, session) {
                 border = "grey"
             )
         }
+    })
+
+    # Maxent
+    output$map_Maxent <- renderPlot({
+        predictions <- rast(readRDS(path_map_Maxent())@predictions[[1]])
+        plot(predictions)
+
+        pred_crop <- crop(predictions, qc_fus_Max)
+        pred_mask <- mask(pred_crop, qc_fus_Max)
+
+        plot(pred_mask,
+            axes = F,
+            main = "Probabilité de présence"
+        )
+        plot(st_geometry(queb_Max),
+            add = T,
+            border = "grey"
+        )
     })
 }

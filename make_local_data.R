@@ -25,15 +25,24 @@ library(terra)
 #     }
 # }
 
-
 #### Transfo projection carte region Qc ####
 # --------------------------------------- #
-
-# Transf for eBird maps
-# ---------------------
 qc <- st_read("/home/claire/BDQC-GEOBON/data/QUEBEC_regions/sf_CERQ_SHP/QUEBEC_CR_NIV_01.gpkg")
 plot(st_geometry(qc), axes = T)
 
+# Transf for Maxent maps
+# ----------------------
+max_map <- rast(readRDS("/home/claire/BDQC-GEOBON/SDM_Maxent_results/Narval_first_test/bonasa_umbellus_L_1-2_QC-buffer_Maxent-jar.rds")@predictions[[1]])
+plot(max_map)
+
+qc4 <- st_transform(qc, crs = st_crs(max_map))
+plot(st_geometry(qc4), add = T)
+
+# st_write(qc4,
+#          "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_for_Maxent_maps.gpkg")
+
+# Transf for eBird maps
+# ---------------------
 eb_map <- terra::rast("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps/acanthis_flammea_range.tif")
 plot(eb_map)
 

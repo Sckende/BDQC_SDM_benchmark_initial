@@ -1,21 +1,23 @@
 ui <- dashboardPage(
     dashboardHeader(title = "Explorateur de SDMs"),
-    dashboardSidebar(width = "0px"),
+    dashboardSidebar(
+        # width = "0px"
+        selectInput("species_select",
+            label = "Species",
+            choices = species
+        ),
+        selectInput("inla_sortie",
+            label = "Sortie INLA",
+            choices = c("range", "pocc")
+        ),
+        selectInput("Maxent_sortie",
+            label = "Sortie Maxent",
+            choices = c("L", "LQ")
+        )
+    ),
     dashboardBody(
         # First row
         fluidRow(
-            box(
-                title = "choix",
-                width = 4,
-                selectInput("species_select",
-                    label = "Species",
-                    choices = species
-                ),
-                selectInput("inla_sortie",
-                    label = "Sortie INLA",
-                    choices = c("range", "pocc")
-                )
-            ),
             box(
                 title = "carte e-bird",
                 width = 4,
@@ -27,7 +29,7 @@ ui <- dashboardPage(
                 plotOutput("map_Vince")
             )
         ),
-        # Second row
+        # Third row
         fluidRow(
             box(
                 title = "carte mapSpecies",
@@ -35,7 +37,8 @@ ui <- dashboardPage(
             ),
             box(
                 title = "carte Maxent",
-                width = 4
+                width = 4,
+                plotOutput("map_Maxent")
             ),
             box(
                 title = "carte BRT",
