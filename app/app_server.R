@@ -12,7 +12,7 @@ server <- function(input, output, session) {
 
     # Maxent
     path_map_Maxent <- reactive({
-        paste0("/home/claire/BDQC-GEOBON/SDM_Maxent_results/Narval_first_test/", input$species_select, "_", input$Maxent_sortie, "_1-2_QC-buffer_Maxent-jar.rds")
+        paste0("/home/claire/BDQC-GEOBON/SDM_Maxent_results/TdB_bench_maps/maps/", input$species_select, "_Maxent_Predictors_Bias_NoSpatial.tif")
     })
 
     #### Map visualization
@@ -66,19 +66,19 @@ server <- function(input, output, session) {
                 bty = "n"
             )
 
-            plot(queb_Vince,
+            plot(st_geometry(queb_Vince),
                 add = T,
                 border = "grey"
             )
         } else {
-            rr_crop <- crop(go_cat, qc_fus)
+            rr_crop <- raster::crop(go_cat, qc_fus)
             rr_mask <- mask(rr_crop, qc_fus)
 
             plot(rr_mask,
                 axes = F,
                 main = "Probabilité de présence"
             )
-            plot(queb_Vince,
+            plot(st_geometry(queb_Vince),
                 add = T,
                 border = "grey"
             )
@@ -87,10 +87,9 @@ server <- function(input, output, session) {
 
     # Maxent
     output$map_Maxent <- renderPlot({
-        predictions <- rast(readRDS(path_map_Maxent())@predictions[[1]])
-        plot(predictions)
+        predictions <- rast(path_map_Maxent())
 
-        pred_crop <- crop(predictions, qc_fus_Max)
+        pred_crop <- terra::crop(predictions, qc_fus_Max)
         pred_mask <- mask(pred_crop, qc_fus_Max)
 
         plot(pred_mask,

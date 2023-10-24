@@ -2,17 +2,28 @@ ui <- dashboardPage(
     dashboardHeader(title = "Explorateur de SDMs"),
     dashboardSidebar(
         # width = "0px"
+        h4("Espèce"),
         selectInput("species_select",
-            label = "Species",
+            label = "",
             choices = species
         ),
+        h4("Modèles INLA"),
         selectInput("inla_sortie",
-            label = "Sortie INLA",
+            label = "Métrique",
             choices = c("range", "pocc")
         ),
-        selectInput("Maxent_sortie",
-            label = "Sortie Maxent",
-            choices = c("L", "LQ")
+        checkboxInput("inla_occs",
+            "Occurrences",
+            value = FALSE
+        ),
+        h4("Modèles Maxent"),
+        checkboxInput("Maxent_occs",
+            "Occurrences",
+            value = FALSE
+        ),
+        checkboxInput("Maxent_pseudo-abs",
+            "Pseudo-absence",
+            value = FALSE
         )
     ),
     dashboardBody(

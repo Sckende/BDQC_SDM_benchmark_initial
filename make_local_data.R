@@ -1,6 +1,6 @@
 library(sf)
 library(terra)
-
+library(ENMeval)
 #### Récuperation des cartes de Vincent - range ####
 # ------------------------------------------------- #
 # Conservation uniquement de la derniere couche - 2015-2019 => 2017
@@ -32,14 +32,15 @@ plot(st_geometry(qc), axes = T)
 
 # Transf for Maxent maps
 # ----------------------
-max_map <- rast(readRDS("/home/claire/BDQC-GEOBON/SDM_Maxent_results/Narval_first_test/bonasa_umbellus_L_1-2_QC-buffer_Maxent-jar.rds")@predictions[[1]])
+max_map <- rast("/home/claire/BDQC-GEOBON/SDM_Maxent_results/TdB_bench_maps/maps/bonasa_umbellus_Maxent_Predictors_Bias_NoSpatial.tif")
 plot(max_map)
+st_crs(max_map) == st_crs(qc)
 
 qc4 <- st_transform(qc, crs = st_crs(max_map))
 plot(st_geometry(qc4), add = T)
 
 # st_write(qc4,
-#          "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_for_Maxent_maps.gpkg")
+#          "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_for_Maxent_maps.gpkg", append = F)
 
 # Transf for eBird maps
 # ---------------------
@@ -61,25 +62,13 @@ rr <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oise
 st_crs(r) == st_crs(rr)
 st_crs(r) == st_crs(qc)
 
-qc3 <- st_transform(qc, crs = st_crs(r))
-st_crs(r) == st_crs(qc3)
+qc_fus <- vect(st_union(qc)) # to obtain an unique spatVector polygon
 
-x11()
-par(mfrow = c(1, 2))
-plot(rr)
-plot(st_geometry(qc3) / 1000, axes = T)
-
-plot(r, col = c("#f6f8e0", "#009999"), legend = F)
-plot(st_geometry(qc3) / 1000, add = T)
-qc4 <- st_geometry(qc3) / 1000
-
-qc_fus <- vect(st_union(qc4)) # to obtain an unique spatVector polygon
-
-rr_crop <- crop(rr, qc_fus)
+rr_crop <- terra::crop(rr, qc_fus)
 rr_mask <- mask(rr_crop, qc_fus)
 
 plot(rr_mask)
-plot(qc4, add = T) # ==> OK!
+plot(qc_fus, add = T) # ==> OK!
 
 # Test avec stars object
 sta <- rast(stars::read_stars("/vsicurl/https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_pocc_2017.tif",
