@@ -27,12 +27,7 @@ for (i in c("bonasa", "catharus", "falcipennis", "junco", "melospiza", "poecile"
 }
 species
 
-# Several Qc proj for model maps
-# ------------------------------
-queb_eb <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_for_eBird_maps.gpkg")
-# ------
-queb_Vince <- st_read("/home/claire/BDQC-GEOBON/data/QUEBEC_regions/sf_CERQ_SHP/QUEBEC_CR_NIV_01.gpkg")
-qc_fus <- vect(st_union(queb_Vince))
-# -----
-queb_Max <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_for_Maxent_maps.gpkg")
-qc_fus_Max <- vect(st_union(queb_Max))
+# Several Polygons for Qc
+# -----------------------
+qc <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_CR_NIV_01.gpkg")
+qc_fus <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_Unique_poly.gpkg")

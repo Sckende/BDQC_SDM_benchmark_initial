@@ -21,7 +21,7 @@ ui <- dashboardPage(
             "Occurrences",
             value = FALSE
         ),
-        checkboxInput("Maxent_pseudo-abs",
+        checkboxInput("Maxent_pseudo_abs",
             "Pseudo-absence",
             value = FALSE
         )

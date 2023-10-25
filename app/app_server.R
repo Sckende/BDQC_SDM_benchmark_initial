@@ -12,7 +12,7 @@ server <- function(input, output, session) {
 
     # Maxent
     path_map_Maxent <- reactive({
-        paste0("/home/claire/BDQC-GEOBON/SDM_Maxent_results/TdB_bench_maps/maps/", input$species_select, "_Maxent_Predictors_Bias_NoSpatial.tif")
+        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps/CROPPED_", input$species_select, "_Maxent_Predictors_Bias_NoSpatial.tif")
     })
 
     #### Map visualization
@@ -26,7 +26,7 @@ server <- function(input, output, session) {
                 axes = F,
                 main = ""
             )
-            plot(st_geometry(queb), axes = T, add = T)
+            plot(st_geometry(qc), axes = T, add = T)
         } else {
             mp <- terra::rast(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps/", path_map_ebird()))
 
@@ -34,7 +34,7 @@ server <- function(input, output, session) {
                 axes = F,
                 main = "Abondance"
             )
-            plot(st_geometry(queb_eb), add = T, border = "grey")
+            plot(st_geometry(qc), add = T, border = "grey")
         }
     })
 
@@ -66,7 +66,7 @@ server <- function(input, output, session) {
                 bty = "n"
             )
 
-            plot(st_geometry(queb_Vince),
+            plot(st_geometry(qc),
                 add = T,
                 border = "grey"
             )
@@ -78,27 +78,39 @@ server <- function(input, output, session) {
                 axes = F,
                 main = "Probabilité de présence"
             )
-            plot(st_geometry(queb_Vince),
+            plot(st_geometry(qc),
                 add = T,
                 border = "grey"
             )
+        }
+        if (input$inla_occs == TRUE) {
+            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", input$species_select, ".gpkg"))
+            plot(occs, add = T, pch = 16, col = "black", cex = 0.5)
         }
     })
 
     # Maxent
     output$map_Maxent <- renderPlot({
-        predictions <- rast(path_map_Maxent())
+        pred_crop <- rast(path_map_Maxent())
 
-        pred_crop <- terra::crop(predictions, qc_fus_Max)
-        pred_mask <- mask(pred_crop, qc_fus_Max)
+        # pred_crop <- terra::crop(predictions, qc_fus_Max)
+        # pred_mask <- mask(pred_crop, qc_fus_Max)
 
-        plot(pred_mask,
+        plot(pred_crop,
             axes = F,
             main = "Probabilité de présence"
         )
-        plot(st_geometry(queb_Max),
+        plot(st_geometry(qc),
             add = T,
             border = "grey"
         )
+        if (input$Maxent_occs == TRUE) {
+            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", input$species_select, ".gpkg"))
+            plot(occs, add = T, pch = 16, col = "black", cex = 0.5)
+        }
+        if (input$Maxent_pseudo_abs == TRUE) {
+            pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/pseudo-abs_", input$species_select, "_Maxent_Predictors_Bias_NoSpatial.gpkg"))
+            plot(pabs, add = T, pch = 16, col = "red", cex = 0.5)
+        }
     })
 }

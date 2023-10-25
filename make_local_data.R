@@ -1,6 +1,7 @@
 library(sf)
 library(terra)
 library(ENMeval)
+
 #### Récuperation des cartes de Vincent - range ####
 # ------------------------------------------------- #
 # Conservation uniquement de la derniere couche - 2015-2019 => 2017
@@ -25,81 +26,112 @@ library(ENMeval)
 #     }
 # }
 
-#### Transfo projection carte region Qc ####
-# --------------------------------------- #
-qc <- st_read("/home/claire/BDQC-GEOBON/data/QUEBEC_regions/sf_CERQ_SHP/QUEBEC_CR_NIV_01.gpkg")
-plot(st_geometry(qc), axes = T)
-
-# Transf for Maxent maps
-# ----------------------
-max_map <- rast("/home/claire/BDQC-GEOBON/SDM_Maxent_results/TdB_bench_maps/maps/bonasa_umbellus_Maxent_Predictors_Bias_NoSpatial.tif")
-plot(max_map)
-st_crs(max_map) == st_crs(qc)
-
-qc4 <- st_transform(qc, crs = st_crs(max_map))
-plot(st_geometry(qc4), add = T)
-
-# st_write(qc4,
-#          "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_for_Maxent_maps.gpkg", append = F)
-
-# Transf for eBird maps
-# ---------------------
-eb_map <- terra::rast("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps/acanthis_flammea_range.tif")
-plot(eb_map)
-
-qc2 <- st_transform(qc, crs = st_crs(eb_map))
-plot(eb_map)
-plot(st_geometry(qc2), add = T)
-
-# st_write(qc2,
-#          "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_for_eBird_maps.gpkg")
-
-# Transf for INLA - Vince maps
-# ----------------------------
-r <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_range_2017.tif")
-rr <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_pocc_2017.tif")
-
-st_crs(r) == st_crs(rr)
-st_crs(r) == st_crs(qc)
-
-qc_fus <- vect(st_union(qc)) # to obtain an unique spatVector polygon
-
-rr_crop <- terra::crop(rr, qc_fus)
-rr_mask <- mask(rr_crop, qc_fus)
-
-plot(rr_mask)
-plot(qc_fus, add = T) # ==> OK!
-
-# Test avec stars object
-sta <- rast(stars::read_stars("/vsicurl/https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_pocc_2017.tif",
-    proxy = TRUE
-)) # stars object
-
-rr_crop <- crop(sta, qc_fus)
-rr_mask <- mask(rr_crop, qc_fus)
-
-plot(rr_mask)
-plot(qc4, add = T) # ==> OK!
-
-# st_write(qc4, "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_for_Vince_maps.gpkg", append = F)
-
-queb <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QC_region_raster_Vince.gpkg")
-plot(st_geometry(queb), axes = T, add = T)
-
-
-
-#### Traitement des cartes ebird ####
+#### Homogénéisation des projections des cartes ####
 # ---------------------------------- #
-# Conversion Qc projection
-map_eb <- terra::rast("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/ebird/Corvus_corax_eb.tif")
-queb <- st_read("/home/claire/BDQC-GEOBON/data/QUEBEC_regions/sf_CERQ_SHP/QUEBEC_CR_NIV_01.gpkg")
-queb2 <- st_transform(queb, crs = st_crs(map_eb))
-st_crs(map_eb) == st_crs(queb2)
+# Utilisation de la proj des cartes de Vincent
 
-qc_fus <- vect(st_union(queb2)) # to obtain an unique spatVector polygon
+## --> cartes eBird
+# -----------------
+m_vin <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_range_2017.tif")
 
+# cartes eBird
+# ------------
+list_ebird <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps", full.names = T)
 
-# species list
+for (i in list_ebird) {
+    map <- rast(i)
+    map <- project(map, m_vin)
+    print("DONE")
+    writeRaster(map,
+        i,
+        overwrite = T
+    )
+}
+
+## --> cartes Maxent
+# ------------------
+list_Maxent <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps/", full.names = T)
+
+for (i in list_Maxent) {
+    map <- rast(i)
+    map <- project(map, m_vin)
+    print("DONE")
+    writeRaster(map,
+        i,
+        overwrite = T
+    )
+}
+
+#### Homogénéisation proj occurrences avec proj cartes ####
+m_vin <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_range_2017.tif")
+
+list_occ <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/sf_converted_occ_pres_only2", full.names = T)
+list_occ_short <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/sf_converted_occ_pres_only2", full.names = F)
+
+for (i in 1:length(list_occ)) {
+    occs <- st_read(list_occ[i])
+    occs_tran <- st_transform(occs, crs = st_crs(m_vin))
+
+    st_write(occs_tran,
+        paste0("//home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", list_occ_short[i]),
+        overwrite = T
+    )
+    print("DONE")
+}
+
+#### Homogénéisation proj pseudo-abs Maxent avec proj cartes ####
+m_vin <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_range_2017.tif")
+
+list_pabs <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs", full.names = T)
+list_pabs_short <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs", full.names = F)
+
+for (i in 1:length(list_pabs)) {
+    pabs <- st_read(list_pabs[i])
+    pabs_tran <- st_transform(pabs, crs = st_crs(m_vin))
+
+    st_write(pabs_tran,
+        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/", list_pabs_short[i]),
+        append = F
+    )
+    print("DONE")
+}
+
+#### Traitement des polygones du Qc ####
+# -------------------------------------- #
+qc <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_CR_NIV_01.gpkg")
+x11()
+plot(st_geometry(qc))
+
+qc_fus <- st_union(qc)
+
+x11()
+plot(st_geometry(qc_fus))
+
+st_write(
+    qc_fus,
+    "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_Unique_poly.gpkg"
+)
+
+#### Croppage des cartes selon les limites du QC ####
+# ------------------------------------------------- #
+qc_fus <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_Unique_poly.gpkg")
+
+list_Maxent <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps", full.names = T)
+list_Maxent_short <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps", full.names = F)
+
+for (i in 1:length(list_Maxent)) {
+    map <- rast(list_Maxent[i])
+    map_crop <- terra::crop(map, qc_fus)
+    map_mask <- mask(map_crop, qc_fus)
+    writeRaster(map_mask,
+        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps/CROPPED_", list_Maxent_short[i]),
+        overwrite = T
+    )
+    print("DONE")
+}
+
+#### Tri des espèces pour les cartes eBird ####
+# ------------------------------------------- #
 # species absent of ebird -> aegolius_funereus & asio_flammeus
 sp_ls <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/Bellavance_maps")
 sp <- stringr::str_remove(sp_ls, "_range.tif")
@@ -126,3 +158,38 @@ for (i in seq_along(sp)) {
         # )
     }
 }
+
+
+#### Creation du background points with no bias ####
+# ------------------------------------------------ #
+predictors <- terra::rast("/home/claire/BDQC-GEOBON/data/predictors.tif")[[1]]
+qc <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_CR_NIV_01.gpkg")
+qc2 <- st_transform(qc, crs = st_crs(predictors))
+
+box <- st_bbox(qc2)
+range <- ext(
+    box[1],
+    box[3],
+    box[2],
+    box[4]
+)
+
+env_to_sample <- crop(predictors, range)
+
+bg <- raptr::randomPoints(
+    env_to_sample,
+    n = 10000
+) %>% as.data.frame()
+
+bg <- st_as_sf(bg,
+    coords = c("x", "y"),
+    crs = st_crs(env_to_sample)
+)
+x11()
+plot(env_to_sample)
+plot(bg, add = T)
+
+st_write(
+    bg,
+    "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/Maxent_bbox_QC_bg_points_noBias.gpkg"
+)
