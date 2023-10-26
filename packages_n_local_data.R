@@ -10,6 +10,10 @@ library(rstac)
 library(terra)
 library(stringr)
 library(ENMeval)
+library(rgbif)
+library(geodata)
+library(rmapshaper)
+library(rnaturalearth)
 
 #### Local data ####
 # ---------------- #

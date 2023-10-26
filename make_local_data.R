@@ -1,6 +1,4 @@
-library(sf)
-library(terra)
-library(ENMeval)
+source("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/packages_n_local_data.R")
 
 #### Récuperation des cartes de Vincent - range ####
 # ------------------------------------------------- #
@@ -25,6 +23,57 @@ library(ENMeval)
 
 #     }
 # }
+
+#### Creation de la zone d'etude ####
+# --------------------------------- #
+
+# Downloads polygons using package geodata
+can <- gadm("CAN", level = 1, path = paste0(getwd(), "/source_data")) |> st_as_sf()
+usa <- gadm("USA", level = 1, path = paste0(getwd(), "/source_data")) |> st_as_sf()
+na <- rbind(can, usa)
+na <- st_transform(na, 32618)
+
+# keep Québec and bordering provinces/states as a buffer
+region <- na[na$NAME_1 %in% c("Québec", "New Brunswick", "Maine", "Vermont", "New Hampshire", "New York", "Ontario", "Nova Scotia", "Prince Edward Island", "Massachusetts", "Connecticut", "Rhode Island"), ]
+
+# split NF into different polygons
+labrador <- ms_explode(na[na$NAME_1 %in% c("Newfoundland and Labrador"), ])
+labrador <- labrador[which.max(st_area(labrador)), ] # keep Labarador
+region <- rbind(region, labrador)
+qc <- ms_simplify(region, 0.01)
+
+# Add it to the study region
+region <- rbind(region, labrador)
+
+# Simplify polygons to make things faster
+region <- ms_simplify(region, 0.005)
+# Conversion proj carte Vincent
+m_vin <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_range_2017.tif")
+
+region <- st_transform(region, crs = st_crs(m_vin))
+# st_write(region, "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_interet_sdm.gpkg", append = F)
+
+region_fus <- st_union(region) |> st_as_sf()
+# Conversion proj carte Vincent
+region_fus <- st_transform(region_fus, crs = st_crs(m_vin))
+# st_write(region_fus, "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_FUSION_interet_sdm.gpkg", append = T)
+
+# lakes
+lakes <- ne_download(scale = "medium", type = "lakes", destdir = paste0(getwd(), "/source_data"), category = "physical", returnclass = "sf") |> st_transform(32618)
+lakes <- st_filter(lakes, region)
+# Conversion proj carte Vincent
+lakes <- st_transform(lakes, crs = st_crs(m_vin))
+# st_write(lakes, "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_LAKES_interet_sdm.gpkg", append = F)
+
+#### Creation de l'ensemble de rasters de predicteurs environnementaux ####
+# ----------------------------------------------------------------------- #
+#### Environmental data raster from Francois Rousseu ####
+# ----------------------------------------------------- #
+pred <- rast("/home/claire/BDQC-GEOBON/data/predictors.tif")
+## --> keep tmean [1], prec [2], xxx_esa [39:51], elevation [20], truggedness [19]
+pred2 <- subset(pred, c(1, 2, 19, 20, 39:51))
+# Crop for the study region
+
 
 #### Homogénéisation des projections des cartes ####
 # ---------------------------------- #
@@ -96,23 +145,7 @@ for (i in 1:length(list_pabs)) {
     print("DONE")
 }
 
-#### Traitement des polygones du Qc ####
-# -------------------------------------- #
-qc <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_CR_NIV_01.gpkg")
-x11()
-plot(st_geometry(qc))
-
-qc_fus <- st_union(qc)
-
-x11()
-plot(st_geometry(qc_fus))
-
-st_write(
-    qc_fus,
-    "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_Unique_poly.gpkg"
-)
-
-#### Croppage des cartes selon les limites du QC ####
+#### Croppage des cartes selon les limites du QC pour le TdeB ####
 # ------------------------------------------------- #
 qc_fus <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_Unique_poly.gpkg")
 
@@ -163,18 +196,14 @@ for (i in seq_along(sp)) {
 #### Creation du background points with no bias ####
 # ------------------------------------------------ #
 predictors <- terra::rast("/home/claire/BDQC-GEOBON/data/predictors.tif")[[1]]
-qc <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_CR_NIV_01.gpkg")
-qc2 <- st_transform(qc, crs = st_crs(predictors))
+region_fus <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_FUSION_interet_sdm.gpkg")
+region_fus <- st_transform(region_fus, crs = st_crs(predictors))
+plot(predictors)
+plot(st_geometry(region_fus), add = T)
 
-box <- st_bbox(qc2)
-range <- ext(
-    box[1],
-    box[3],
-    box[2],
-    box[4]
-)
+env_to_sample <- crop(predictors, vect(region_fus), mask = T)
 
-env_to_sample <- crop(predictors, range)
+plot(env_to_sample, add = T, col = "grey")
 
 bg <- raptr::randomPoints(
     env_to_sample,
@@ -191,5 +220,6 @@ plot(bg, add = T)
 
 st_write(
     bg,
-    "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/Maxent_bbox_QC_bg_points_noBias.gpkg"
+    "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/Maxent_bbox_QC_bg_points_noBias.gpkg",
+    append = F
 )
