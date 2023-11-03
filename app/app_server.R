@@ -18,24 +18,29 @@ server <- function(input, output, session) {
     #### Map visualization
     # eBird
     output$map_eBird <- renderPlot({
-        if (input$species_select %in% c("aegolius_funereus", "asio_flammeus")) {
-            mp <- terra::rast("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps/acanthis_flammea_range.tif")
+        # if (input$species_select %in% c("aegolius_funereus", "asio_flammeus")) {
+        #     mp <- terra::rast("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps/acanthis_flammea_range.tif")
 
-            terra::plot(mp,
-                col = "#edf5f5",
-                axes = F,
-                main = ""
-            )
-            plot(st_geometry(qc), axes = T, add = T)
-        } else {
-            mp <- terra::rast(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps/", path_map_ebird()))
+        #     terra::plot(mp,
+        #         col = "#edf5f5",
+        #         axes = F,
+        #         main = ""
+        #     )
+        #     plot(st_geometry(qc), axes = T, add = T)
+        # } else {
+        mp <- terra::rast(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/eBird_maps/", path_map_ebird()))
 
-            terra::plot(mp,
-                axes = F,
-                main = "Abondance"
-            )
-            plot(st_geometry(qc), add = T, border = "grey")
-        }
+        terra::plot(mp,
+            axes = F,
+            main = "Abondance"
+        )
+        plot(st_geometry(qc), add = T, border = "grey")
+        plot(st_geometry(lakes),
+            add = T,
+            col = "white",
+            border = "grey"
+        )
+        # }
     })
 
     # Vincent
@@ -70,6 +75,11 @@ server <- function(input, output, session) {
                 add = T,
                 border = "grey"
             )
+            plot(st_geometry(lakes),
+                add = T,
+                col = "white",
+                border = "grey"
+            )
         } else {
             rr_crop <- raster::crop(go_cat, qc_fus)
             rr_mask <- mask(rr_crop, qc_fus)
@@ -82,10 +92,17 @@ server <- function(input, output, session) {
                 add = T,
                 border = "grey"
             )
+            plot(st_geometry(lakes),
+                add = T,
+                col = "white",
+                border = "grey"
+            )
         }
         if (input$inla_occs == TRUE) {
-            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", input$species_select, ".gpkg"))
-            plot(occs, add = T, pch = 16, col = "black", cex = 0.5)
+            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_", input$species_select, ".gpkg"))
+
+            occs2 <- st_intersection(occs, qc_fus)
+            plot(occs2, add = T, pch = 16, col = "black", cex = 0.5)
         }
     })
 
@@ -100,16 +117,21 @@ server <- function(input, output, session) {
             axes = F,
             main = "Probabilité de présence"
         )
-        plot(st_geometry(qc),
+        plot(st_geometry(region),
             add = T,
             border = "grey"
         )
+        plot(st_geometry(lakes),
+            add = T,
+            col = "white",
+            border = "grey"
+        )
         if (input$Maxent_occs == TRUE) {
-            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", input$species_select, ".gpkg"))
+            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_", input$species_select, ".gpkg"))
             plot(occs, add = T, pch = 16, col = "black", cex = 0.5)
         }
         if (input$Maxent_pseudo_abs == TRUE) {
-            pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/pseudo-abs_", input$species_select, "_Maxent_Predictors_Bias_NoSpatial.gpkg"))
+            pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_pseudo-abs_", input$species_select, "_Maxent_Predictors_Bias_NoSpatial.gpkg"))
             plot(pabs, add = T, pch = 16, col = "red", cex = 0.5)
         }
     })
