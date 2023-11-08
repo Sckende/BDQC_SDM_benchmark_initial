@@ -7,6 +7,19 @@ ui <- dashboardPage(
             label = "",
             choices = species
         ),
+        h4("Paramétrage"),
+        selectInput("predictors",
+            label = "Prédicteurs environnementaux",
+            choices = c("Predictors", "noPredictors")
+        ),
+        selectInput("bias",
+            label = "Biais d'échantillonnage",
+            choices = c("Bias", "noBias")
+        ),
+        selectInput("spatial",
+            label = "Auto-corrélation spatiale",
+            choices = c("Spatial", "noSpatial")
+        ),
         h4("Modèles INLA"),
         selectInput("inla_sortie",
             label = "Métrique",

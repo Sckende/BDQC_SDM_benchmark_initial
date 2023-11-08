@@ -1,5 +1,10 @@
 server <- function(input, output, session) {
     #### Map selection
+    observeEvent(input$predictors, {
+        if (input$predictors == "noPredictors") {
+            updateSelectInput(session, "spatial", choices = "Spatial")
+        }
+    })
     # eBird
     path_map_ebird <- reactive({
         paste0(input$species_select, "_range.tif")
@@ -12,7 +17,7 @@ server <- function(input, output, session) {
 
     # Maxent
     path_map_Maxent <- reactive({
-        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps/CROPPED_", input$species_select, "_Maxent_Predictors_Bias_NoSpatial.tif")
+        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps/CROPPED_QC_", input$species_select, "_Maxent_", input$predictors, "_", input$bias, "_", input$spatial, ".tif")
     })
 
     #### Map visualization
@@ -32,7 +37,8 @@ server <- function(input, output, session) {
 
         terra::plot(mp,
             axes = F,
-            main = "Abondance"
+            main = "Abondance",
+            mar = NA
         )
         plot(st_geometry(qc), add = T, border = "grey")
         plot(st_geometry(lakes),
@@ -60,6 +66,7 @@ server <- function(input, output, session) {
             terra::plot(go_cat,
                 axes = F,
                 main = "Occurrence",
+                mar = NA,
                 col = c("#f6f8e0", "#009999"),
                 key.pos = NULL
             )
@@ -86,6 +93,7 @@ server <- function(input, output, session) {
 
             plot(rr_mask,
                 axes = F,
+                mar = NA,
                 main = "Probabilité de présence"
             )
             plot(st_geometry(qc),
@@ -115,9 +123,11 @@ server <- function(input, output, session) {
 
         plot(pred_crop,
             axes = F,
+            mar = NA,
             main = "Probabilité de présence"
+            # main = strsplit(path_map_Maxent(), "/")[[1]][10]
         )
-        plot(st_geometry(region),
+        plot(st_geometry(qc),
             add = T,
             border = "grey"
         )
@@ -131,7 +141,7 @@ server <- function(input, output, session) {
             plot(occs, add = T, pch = 16, col = "black", cex = 0.5)
         }
         if (input$Maxent_pseudo_abs == TRUE) {
-            pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_pseudo-abs_", input$species_select, "_Maxent_Predictors_Bias_NoSpatial.gpkg"))
+            pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_pseudo-abs_", input$species_select, "_Maxent_noPredictors_Bias_Spatial.gpkg"))
             plot(pabs, add = T, pch = 16, col = "red", cex = 0.5)
         }
     })
