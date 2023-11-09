@@ -23,7 +23,7 @@ ui <- dashboardPage(
         h4("Modèles INLA"),
         selectInput("inla_sortie",
             label = "Métrique",
-            choices = c("range", "pocc")
+            choices = c("pocc", "range")
         ),
         checkboxInput("inla_occs",
             "Occurrences",

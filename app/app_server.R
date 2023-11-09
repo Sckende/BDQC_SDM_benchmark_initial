@@ -3,6 +3,8 @@ server <- function(input, output, session) {
     observeEvent(input$predictors, {
         if (input$predictors == "noPredictors") {
             updateSelectInput(session, "spatial", choices = "Spatial")
+        } else {
+            updateSelectInput(session, "spatial", choices = c("Spatial", "noSpatial"))
         }
     })
     # eBird
@@ -41,7 +43,7 @@ server <- function(input, output, session) {
             mar = NA
         )
         plot(st_geometry(qc), add = T, border = "grey")
-        plot(st_geometry(lakes),
+        plot(st_geometry(lakes_qc),
             add = T,
             col = "white",
             border = "grey"
@@ -82,7 +84,7 @@ server <- function(input, output, session) {
                 add = T,
                 border = "grey"
             )
-            plot(st_geometry(lakes),
+            plot(st_geometry(lakes_qc),
                 add = T,
                 col = "white",
                 border = "grey"
@@ -100,17 +102,17 @@ server <- function(input, output, session) {
                 add = T,
                 border = "grey"
             )
-            plot(st_geometry(lakes),
+            plot(st_geometry(lakes_qc),
                 add = T,
                 col = "white",
                 border = "grey"
             )
         }
         if (input$inla_occs == TRUE) {
-            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_", input$species_select, ".gpkg"))
+            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_QC_", input$species_select, ".gpkg"))
 
-            occs2 <- st_intersection(occs, qc_fus)
-            plot(occs2, add = T, pch = 16, col = "black", cex = 0.5)
+            # occs2 <- st_intersection(occs, qc_fus)
+            plot(occs, add = T, pch = 16, col = "black", cex = 0.5)
         }
     })
 
@@ -131,18 +133,29 @@ server <- function(input, output, session) {
             add = T,
             border = "grey"
         )
-        plot(st_geometry(lakes),
+        plot(st_geometry(lakes_qc),
             add = T,
             col = "white",
             border = "grey"
         )
         if (input$Maxent_occs == TRUE) {
-            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_", input$species_select, ".gpkg"))
+            occs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_QC_", input$species_select, ".gpkg"))
             plot(occs, add = T, pch = 16, col = "black", cex = 0.5)
         }
         if (input$Maxent_pseudo_abs == TRUE) {
-            pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_pseudo-abs_", input$species_select, "_Maxent_noPredictors_Bias_Spatial.gpkg"))
-            plot(pabs, add = T, pch = 16, col = "red", cex = 0.5)
+            if (input$bias == "noBias") {
+                pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_QC_pseudo-abs_region_Maxent_noBias.gpkg"))
+                plot(pabs, add = T, pch = 16, col = "red", cex = 0.5)
+            } else if (input$predictors == "noPredictors") {
+                pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_QC_pseudo-abs_", input$species_select, "_Maxent_noPredictors_Bias_Spatial.gpkg"))
+                plot(pabs, add = T, pch = 16, col = "red", cex = 0.5)
+            } else if (input$spatial == "Spatial") {
+                pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_QC_pseudo-abs_", input$species_select, "_Maxent_Predictors_Bias_Spatial.gpkg"))
+                plot(pabs, add = T, pch = 16, col = "red", cex = 0.5)
+            } else {
+                pabs <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_QC_pseudo-abs_", input$species_select, "_Maxent_Predictors_Bias_noSpatial.gpkg"))
+                plot(pabs, add = T, pch = 16, col = "red", cex = 0.5)
+            }
         }
     })
 }

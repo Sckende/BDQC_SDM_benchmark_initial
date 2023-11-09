@@ -26,6 +26,8 @@ source("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/packages_n_lo
 
 #### Tri des espèces pour les cartes eBird ####
 # ------------------------------------------- #
+m_vin <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_range_2017.tif")
+
 # species absent of ebird -> aegolius_funereus & asio_flammeus
 sp_ls <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/Bellavance_maps")
 sp <- stringr::str_remove(sp_ls, "_range.tif")
@@ -44,6 +46,8 @@ for (i in seq_along(sp)) {
         eb_map <- terra::rast(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/ebird/", spe_eb, "_eb.tif"))
         eb_qc <- crop(eb_map, qc_fus)
         eb_qc2 <- mask(eb_qc, qc_fus)
+
+        eb_qc2 <- st_transform(eb_qc2, crs = st_crs())
 
         # writeRaster(
         #     eb_qc2,
@@ -94,6 +98,12 @@ lakes <- st_filter(lakes, region)
 lakes <- st_transform(lakes, crs = st_crs(m_vin))
 # st_write(lakes, "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_LAKES_interet_sdm.gpkg", append = F)
 
+lakes <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_LAKES_interet_sdm.gpkg")
+qc_fus <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_Unique_poly.gpkg")
+st_crs(lakes) == st_crs(qc_fus)
+lakes_qc <- st_intersection(lakes, qc_fus)
+
+# st_write(lakes_qc, "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_LAKES_QC_sdm.gpkg", append = F)
 
 #### Creation de l'ensemble de rasters de predicteurs environnementaux ####
 # ----------------------------------------------------------------------- #
@@ -201,20 +211,20 @@ wkt_region <- st_as_text(st_geometry(region_fus))
 wkt_qc <- st_as_text(st_geometry(qc_fus))
 
 
-list_occ <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/sf_converted_occ_pres_only2", full.names = T)
-list_occ_short <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/sf_converted_occ_pres_only2", full.names = F)
+list_occ <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/occurrences", full.names = T)
+list_occ_short <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/occurrences", full.names = F)
 
-for (i in 126:length(list_occ)) {
+for (i in 1:length(list_occ)) {
     occs <- st_read(list_occ[i], quiet = T)
 
     # Projection change
     occs_tran <- st_transform(occs, crs = st_crs(m_vin))
+    occs_tran <- occs_tran[!duplicated(st_geometry(occs_tran)), ]
 
     st_write(occs_tran,
         paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", list_occ_short[i]),
         append = F
     )
-/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps
     # croppage des occurrences
     occs_crop_reg <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", list_occ_short[i]),
         quiet = T,
@@ -251,14 +261,15 @@ wkt_reg <- st_as_text(st_geometry(region_fus))
 wkt_qc <- st_as_text(st_geometry(qc_fus))
 
 
-list_pabs <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs", full.names = T)
-list_pabs_short <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs", full.names = F)
+list_pabs <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/pseudo_abs", full.names = T)
+list_pabs_short <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/pseudo_abs", full.names = F)
 
 for (i in 1:length(list_pabs)) {
     pabs <- st_read(list_pabs[i], quiet = T)
 
     # Projection change
     pabs_tran <- st_transform(pabs, crs = st_crs(m_vin))
+    pabs_tran <- pabs[!duplicated(st_geometry(pabs)), ]
 
     st_write(pabs_tran,
         paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/", list_pabs_short[i]),
@@ -341,7 +352,7 @@ occur <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/
 #### maps
 map_spe <- spe_ls[grep(i, spe_ls)]
 
-# ----> Cropped with Qc 
+# ----> Cropped with Qc
 Crop_Bias <- map_spe[grep("CROPPED.*\\_Bias", map_spe)]
 Crop_noBias <- map_spe[grep("CROPPED.*\\_noBias", map_spe)]
 
@@ -365,9 +376,9 @@ psabs_noBias_Crop <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark
 # noPredictors_Bias_Spatial
 # Predictors_Bias_noSpatial
 # Predictors_Bias_Spatial
-psabs_Bias_noCrop <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/pseudo-abs_", i, "_region_Maxent_noBias.gpkg")) 
+psabs_Bias_noCrop <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/pseudo-abs_", i, "_region_Maxent_noBias.gpkg"))
 
-psabs_Bias_Crop <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_QC_pseudo-abs_", i, "_region_Maxent_noBias.gpkg")) 
+psabs_Bias_Crop <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/pseudo_abs/CROPPED_QC_pseudo-abs_", i, "_region_Maxent_noBias.gpkg"))
 
 
 plot(rast(map_spe[1]))
