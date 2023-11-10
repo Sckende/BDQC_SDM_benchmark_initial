@@ -45,28 +45,42 @@ ui <- dashboardPage(
             box(
                 title = "carte e-bird",
                 width = 4,
+                status = "primary",
                 plotOutput("map_eBird")
             ),
             box(
-                title = "carte INLA - auto-corrélation spatiale",
+                title = "carte mapSpecies",
                 width = 4,
-                plotOutput("map_Vince")
+                status = "warning",
+                plotOutput("map_mapSpecies")
+            ),
+            box(
+                title = "carte Maxent",
+                width = 4,
+                status = "warning",
+                plotOutput("map_Maxent")
             )
         ),
         # Third row
         fluidRow(
             box(
-                title = "carte mapSpecies",
-                width = 4
-            ),
-            box(
-                title = "carte Maxent",
+                title = "carte INLA - auto-corrélation spatiale",
                 width = 4,
-                plotOutput("map_Maxent")
+                status = "primary",
+                plotOutput("map_Vince")
             ),
             box(
                 title = "carte BRT",
-                width = 4
+                width = 4,
+                status = "warning",
+                # background = "black",
+                plotOutput("map_BRT")
+            ),
+            box(
+                title = "carte random forest",
+                width = 4,
+                status = "warning",
+                plotOutput("map_randomForest")
             )
         )
     )

@@ -22,6 +22,21 @@ server <- function(input, output, session) {
         paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps/CROPPED_QC_", input$species_select, "_Maxent_", input$predictors, "_", input$bias, "_", input$spatial, ".tif")
     })
 
+    # MapSpecies
+    path_map_mapSpecies <- reactive({
+        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps/CROPPED_QC_", input$species_select, "_ewlgcpSDM_", input$predictors, "_", input$bias, "_", input$spatial, ".tif")
+    })
+
+    # BRT
+    path_map_brt <- reactive({
+        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps/CROPPED_QC_", input$species_select, "_brt_", input$predictors, "_", input$bias, "_", input$spatial, ".tif")
+    })
+
+    # Random Forest
+    path_map_randomForest <- reactive({
+        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/maps/CROPPED_QC_", input$species_select, "_randomForest_", input$predictors, "_", input$bias, "_", input$spatial, ".tif")
+    })
+
     #### Map visualization
     # eBird
     output$map_eBird <- renderPlot({
@@ -116,6 +131,27 @@ server <- function(input, output, session) {
         }
     })
 
+    # MapSPecies
+    output$map_mapSpecies <- renderPlot({
+        pred_crop <- rast(path_map_mapSpecies())
+
+        plot(pred_crop,
+            axes = F,
+            mar = NA,
+            main = "Intensité"
+            # main = strsplit(path_map_Maxent(), "/")[[1]][10]
+        )
+        plot(st_geometry(qc),
+            add = T,
+            border = "grey"
+        )
+        plot(st_geometry(lakes_qc),
+            add = T,
+            col = "white",
+            border = "grey"
+        )
+    })
+
     # Maxent
     output$map_Maxent <- renderPlot({
         pred_crop <- rast(path_map_Maxent())
@@ -157,5 +193,47 @@ server <- function(input, output, session) {
                 plot(pabs, add = T, pch = 16, col = "red", cex = 0.5)
             }
         }
+    })
+
+    # BRT
+    output$map_BRT <- renderPlot({
+        pred_crop <- rast(path_map_brt())
+
+        plot(pred_crop,
+            axes = F,
+            mar = NA,
+            main = "Probabilité de présence"
+            # main = strsplit(path_map_Maxent(), "/")[[1]][10]
+        )
+        plot(st_geometry(qc),
+            add = T,
+            border = "grey"
+        )
+        plot(st_geometry(lakes_qc),
+            add = T,
+            col = "white",
+            border = "grey"
+        )
+    })
+
+    # Random Forest
+    output$map_randomForest <- renderPlot({
+        pred_crop <- rast(path_map_randomForest())
+
+        plot(pred_crop,
+            axes = F,
+            mar = NA,
+            main = "Probabilité de présence"
+            # main = strsplit(path_map_Maxent(), "/")[[1]][10]
+        )
+        plot(st_geometry(qc),
+            add = T,
+            border = "grey"
+        )
+        plot(st_geometry(lakes_qc),
+            add = T,
+            col = "white",
+            border = "grey"
+        )
     })
 }
