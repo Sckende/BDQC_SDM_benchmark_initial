@@ -239,4 +239,25 @@ server <- function(input, output, session) {
             border = "grey"
         )
     })
+
+    # Richesse specifique INLA
+    output$rs_INLA <- renderPlot({
+        map <- rast("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/species_richness/INLA_range_2017.tif")
+
+        plot(map,
+            axes = F,
+            mar = NA,
+            # range = c(0, 1),
+            main = "Richesse spécifique"
+        )
+                plot(st_geometry(qc),
+            add = T,
+            border = "grey"
+        )
+        plot(st_geometry(lakes_qc),
+            add = T,
+            col = "white",
+            border = "grey"
+        )
+    })
 }

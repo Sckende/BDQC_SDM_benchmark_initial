@@ -225,7 +225,7 @@ ui <- navbarPage(
                         title = "INLA",
                         width = 4,
                         status = "primary",
-                        plotOutput("")
+                        plotOutput("rs_INLA")
                     ),
                     box(
                         title = "boosted regression tree",
