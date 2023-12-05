@@ -162,7 +162,8 @@ server <- function(input, output, session) {
         plot(pred_crop,
             axes = F,
             mar = NA,
-            main = "Probabilité de présence"
+            main = "Probabilité de présence",
+            range = c(0, 1)
             # main = strsplit(path_map_Maxent(), "/")[[1]][10]
         )
         plot(st_geometry(qc),
@@ -202,7 +203,8 @@ server <- function(input, output, session) {
         plot(pred_crop,
             axes = F,
             mar = NA,
-            main = "Probabilité de présence"
+            main = "Probabilité de présence",
+            range = c(0, 1)
             # main = strsplit(path_map_Maxent(), "/")[[1]][10]
         )
         plot(st_geometry(qc),
@@ -223,7 +225,8 @@ server <- function(input, output, session) {
         plot(pred_crop,
             axes = F,
             mar = NA,
-            main = "Probabilité de présence"
+            main = "Probabilité de présence",
+            range = c(0, 1)
             # main = strsplit(path_map_Maxent(), "/")[[1]][10]
         )
         plot(st_geometry(qc),

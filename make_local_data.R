@@ -358,3 +358,26 @@ for (i in 1:length(list_model)) {
 #         overwrite = T
 #     )
 #     print("DONE")
+
+
+#### Calcul de la richesse specifique ####
+# ------------------------------------- #
+species # to update with all bird species !
+
+all_rast <- list()
+
+for (i in seq_along(species)) {
+    r <- terra::rast(paste0("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/", species[i], "_range_2017.tif"))
+    all_rast[[i]] <- r
+
+    print(i)
+}
+
+stack_rast <- rast(all_rast)
+rs <- sum(stack_rast)
+x11()
+plot(rs)
+# writeRaster(rs,
+#     "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/species_richness/INLA_range_2017.tif",
+#     overwrite = T
+# )
