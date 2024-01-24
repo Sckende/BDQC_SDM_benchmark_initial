@@ -1,4 +1,4 @@
-source("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/packages_n_local_data.R")
+source("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/packages_n_local_data.R")
 
 #### Récuperation des cartes de Vincent - range ####
 # ------------------------------------------------- #
@@ -29,7 +29,7 @@ source("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/packages_n_lo
 m_vin <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_range_2017.tif")
 
 # species absent of ebird -> aegolius_funereus & asio_flammeus
-sp_ls <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/Bellavance_maps")
+sp_ls <- list.files("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/Bellavance_maps")
 sp <- stringr::str_remove(sp_ls, "_range.tif")
 
 for (i in seq_along(sp)) {

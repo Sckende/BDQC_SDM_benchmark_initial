@@ -22,8 +22,7 @@ library(rnaturalearth)
 # ------------
 # species <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/original_maps")
 
-spe <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/original_maps")
-
+spe <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/original_maps") # *** BROKEN LOCAL PATH ***
 species <- vector()
 for (i in c("bonasa", "catharus", "falcipennis", "junco", "melospiza", "poecile", "setophaga")) {
     spee <- spe[str_detect(spe, i)]
@@ -33,8 +32,8 @@ species
 
 # Several Polygons for Qc
 # -----------------------
-qc <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_CR_NIV_01.gpkg")
-qc_fus <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_Unique_poly.gpkg")
+qc <- st_read("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_CR_NIV_01.gpkg")
+qc_fus <- st_read("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_Unique_poly.gpkg")
 
-region <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_interet_sdm.gpkg")
-lakes_qc <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_LAKES_QC_sdm.gpkg")
+region <- st_read("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_interet_sdm.gpkg")
+lakes_qc <- st_read("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_LAKES_QC_sdm.gpkg")
