@@ -22,13 +22,14 @@ library(rnaturalearth)
 # ------------
 # species <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/original_maps")
 
-spe <- list.files("/home/claire/BDQC-GEOBON/data/Bellavance_data/original_maps") # *** BROKEN LOCAL PATH ***
-species <- vector()
-for (i in c("bonasa", "catharus", "falcipennis", "junco", "melospiza", "poecile", "setophaga")) {
-    spee <- spe[str_detect(spe, i)]
-    species <- c(species, spee)
-}
-species
+spe <- list.files("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/Bellavance_occurrences/sf_converted_occ_pres_only/")
+species <- spe
+# species <- vector()
+# for (i in c("bonasa", "catharus", "falcipennis", "junco", "melospiza", "poecile", "setophaga")) {
+#     spee <- spe[str_detect(spe, i)]
+#     species <- c(species, spee)
+# }
+# species
 
 # Several Polygons for Qc
 # -----------------------

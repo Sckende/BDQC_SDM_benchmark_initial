@@ -204,15 +204,15 @@ for (i in list_Maxent) {
 
 #### Homogénéisation proj occurrences avec proj cartes & crop depending on reg_fus####
 # ------------------------------------------------------ #
-m_vin <- terra::rast("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/acanthis_flammea_range_2017.tif")
-region_fus <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/REGION_FUSION_interet_sdm.gpkg")
-qc_fus <- st_read("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/QUEBEC_Unique_poly.gpkg")
+m_vin <- terra::rast("/vsicurl/https://object-arbutus.cloud.computecanada.ca/bq-io/acer/TdeB_benchmark_SDM/oiseaux-nicheurs-qc/setophaga_magnolia_range_2017.tif")
+region_fus <- st_read("/vsicurl/https://object-arbutus.cloud.computecanada.ca/bq-io/acer/TdeB_benchmark_SDM/REGION_FUSION_interet_sdm.gpkg")
+qc_fus <- st_read("/vsicurl/https://object-arbutus.cloud.computecanada.ca/bq-io/acer/TdeB_benchmark_SDM/QUEBEC_Unique_poly.gpkg")
 wkt_region <- st_as_text(st_geometry(region_fus))
 wkt_qc <- st_as_text(st_geometry(qc_fus))
 
 
-list_occ <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/occurrences", full.names = T)
-list_occ_short <- list.files("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/source_data/occurrences", full.names = F)
+list_occ <- list.files("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/Bellavance_occurrences/sf_converted_occ_pres_only2/sf_converted_occ_pres_only", full.names = T)
+list_occ_short <- list.files("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/Bellavance_occurrences/sf_converted_occ_pres_only2/sf_converted_occ_pres_only", full.names = F)
 
 for (i in 1:length(list_occ)) {
     occs <- st_read(list_occ[i], quiet = T)
@@ -222,28 +222,28 @@ for (i in 1:length(list_occ)) {
     occs_tran <- occs_tran[!duplicated(st_geometry(occs_tran)), ]
 
     st_write(occs_tran,
-        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", list_occ_short[i]),
+        paste0("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", list_occ_short[i]),
         append = F
     )
     # croppage des occurrences
-    occs_crop_reg <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", list_occ_short[i]),
+    occs_crop_reg <- st_read(paste0("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", list_occ_short[i]),
         quiet = T,
         wkt_filter = wkt_region
     )
 
-    occs_crop_qc <- st_read(paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", list_occ_short[i]),
+    occs_crop_qc <- st_read(paste0("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/", list_occ_short[i]),
         quiet = T,
         wkt_filter = wkt_qc
     )
 
     st_write(occs_crop_reg,
-        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_", list_occ_short[i]),
+        paste0("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_", list_occ_short[i]),
         append = F,
         quiet = T
     )
 
     st_write(occs_crop_qc,
-        paste0("/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_QC_", list_occ_short[i]),
+        paste0("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/occurrences/CROPPED_QC_", list_occ_short[i]),
         append = F,
         quiet = T
     )
@@ -362,12 +362,42 @@ for (i in 1:length(list_model)) {
 
 #### Calcul de la richesse specifique ####
 # ------------------------------------- #
-species # to update with all bird species !
+# to update with all bird species !
+species <- c(
+    "bonasa_umbellus",
+    "catharus_bicknelli",
+    "catharus_fuscescens",
+    "catharus_guttatus",
+    "catharus_ustulatus",
+    "falcipennis_canadensis",
+    "junco_hyemalis",
+    "melospiza_georgiana",
+    "melospiza_lincolnii",
+    "melospiza_melodia",
+    "poecile_atricapillus",
+    "poecile_hudsonicus",
+    "setophaga_americana",
+    "setophaga_caerulescens",
+    "setophaga_castanea",
+    "setophaga_cerulea",
+    "setophaga_coronata",
+    "setophaga_fusca",
+    "setophaga_magnolia",
+    "setophaga_palmarum",
+    "setophaga_pensylvanica",
+    "setophaga_petechia",
+    "setophaga_pinus",
+    "setophaga_ruticilla",
+    "setophaga_striata",
+    "setophaga_tigrina",
+    "setophaga_virens"
+)
 
+# For INLA
 all_rast <- list()
 
 for (i in seq_along(species)) {
-    r <- terra::rast(paste0("https://object-arbutus.cloud.computecanada.ca/bq-io/acer/oiseaux-nicheurs-qc/", species[i], "_range_2017.tif"))
+    r <- terra::rast(paste0("/vsicurl/https://object-arbutus.cloud.computecanada.ca/bq-io/acer/TdeB_benchmark_SDM/oiseaux-nicheurs-qc/", species[i], "_range_2017.tif"))
     all_rast[[i]] <- r
 
     print(i)
@@ -377,7 +407,84 @@ stack_rast <- rast(all_rast)
 rs <- sum(stack_rast)
 x11()
 plot(rs)
-# writeRaster(rs,
-#     "/home/claire/BDQC-GEOBON/GITHUB/BDQC_SDM_benchmark_initial/local_data/TdB_bench_maps/species_richness/INLA_range_2017.tif",
-#     overwrite = T
-# )
+writeRaster(rs,
+    "/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/EBV_spe_rich_maps/INLA_RS_2017.tif",
+    overwrite = T
+)
+
+# For other models
+model <- c("ewlgcpSDM", "Maxent", "randomForest", "brt")
+predictor <- c("Predictors", "noPredictors")
+bias <- c("Bias", "noBias")
+spatial <- c("Spatial", "noSpatial")
+for (mod in model) {
+    for (pred in predictor) {
+        if (pred == "Predictors") {
+            for (bi in bias) {
+                for (spat in spatial) {
+                    system(paste0("AWS_ACCESS_KEY_ID=NJBPPQZX7PFUBP1LH8B0 AWS_SECRET_ACCESS_KEY=DVQZTIQYUBxqs0nwtfA4n1meL8Fv9w977pSp8Gjc S3_ENDPOINT_URL=https://object-arbutus.cloud.computecanada.ca s5cmd ls 's3://bq-io/acer/TdeB_benchmark_SDM/TdB_bench_maps/thresh_test/THRESH_99_CROPPED_QC_*_", mod, "_", pred, "_", bi, "_", spat, ".tif' >> /home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/RS_calcul/", mod, "_", pred, "_", bi, "_", spat, "_2017.txt"))
+
+                    file_path <- paste0("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/RS_calcul/", mod, "_", pred, "_", bi, "_", spat, "_2017.txt")
+
+                    sdm <- readLines(file_path)
+
+                    treat <- lapply(sdm, function(x) {
+                        mod <- paste0("CROPPED_QC_", sub(".*CROPPED_QC_", "", x))
+                        spl <- unlist(str_split(mod, "_"))
+                        spe <- paste(spl[3], spl[4], sep = "_")
+
+                        final <- data.frame(spe = spe, mod = mod)
+                    })
+                    sdm2 <- do.call("rbind", treat)[, 2]
+
+                    all_rast <- list()
+                    for (i in seq_along(sdm2)) {
+                        r <- terra::rast(paste0("/vsicurl/https://object-arbutus.cloud.computecanada.ca/bq-io/acer/TdeB_benchmark_SDM/TdB_bench_maps/thresh_test/THRESH_99_", sdm2[i]))
+                        all_rast[[i]] <- r
+                        print(sdm2[i])
+                    }
+                    stack_rast <- rast(all_rast)
+                    rs <- sum(stack_rast)
+                    x11()
+                    plot(rs)
+                    writeRaster(rs,
+                        paste0("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/RS_calcul/maps/", mod, "_", pred, "_", bi, "_", spat, "_2017.tif"),
+                        overwrite = T
+                    )
+                }
+            }
+        } else {
+            for (bi in bias) {
+                system(paste0("AWS_ACCESS_KEY_ID=NJBPPQZX7PFUBP1LH8B0 AWS_SECRET_ACCESS_KEY=DVQZTIQYUBxqs0nwtfA4n1meL8Fv9w977pSp8Gjc S3_ENDPOINT_URL=https://object-arbutus.cloud.computecanada.ca s5cmd ls 's3://bq-io/acer/TdeB_benchmark_SDM/TdB_bench_maps/thresh_test/THRESH_99_CROPPED_QC_*_", mod, "_noPredictors_", bi, "_Spatial.tif' >> /home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/RS_calcul/", mod, "_noPredictors_", bi, "_Spatial_2017.txt"))
+
+                file_path <- paste0("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/RS_calcul/", mod, "_noPredictors_", bi, "_Spatial_2017.txt")
+
+                sdm <- readLines(file_path)
+
+                treat <- lapply(sdm, function(x) {
+                    mod <- paste0("CROPPED_QC_", sub(".*CROPPED_QC_", "", x))
+                    spl <- unlist(str_split(mod, "_"))
+                    spe <- paste(spl[3], spl[4], sep = "_")
+
+                    final <- data.frame(spe = spe, mod = mod)
+                })
+                sdm2 <- do.call("rbind", treat)[, 2]
+
+                all_rast <- list()
+                for (i in seq_along(sdm2)) {
+                    r <- terra::rast(paste0("/vsicurl/https://object-arbutus.cloud.computecanada.ca/bq-io/acer/TdeB_benchmark_SDM/TdB_bench_maps/thresh_test/THRESH_99_", sdm2[i]))
+                    all_rast[[i]] <- r
+                    print(sdm2[i])
+                }
+                stack_rast <- rast(all_rast)
+                rs <- sum(stack_rast)
+                x11()
+                plot(rs)
+                writeRaster(rs,
+                    paste0("/home/local/USHERBROOKE/juhc3201/BDQC-GEOBON/data/RS_calcul/maps/", mod, "_noPredictors_", bi, "_Spatial_2017.tif"),
+                    overwrite = T
+                )
+            }
+        }
+    }
+}
